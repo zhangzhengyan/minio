@@ -1899,7 +1899,7 @@ func (s *xlStorage) CheckParts(ctx context.Context, volume string, path string, 
 			return errFileNotFound
 		}
 		// Check if shard is truncated.
-		if st.Size() < fi.Erasure.ShardFileSize(part.Size) {
+		if st.Size() != fi.Erasure.ShardFileSize(part.Size) {
 			return errFileCorrupt
 		}
 	}
