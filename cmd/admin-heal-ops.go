@@ -841,10 +841,12 @@ func (h *healSequence) healMinioSysMeta(metaPrefix string) func() error {
 			}, madmin.HealItemBucketMetadata)
 			// Object might have been deleted, by the time heal
 			// was attempted we ignore this object an move on.
-			if isErrObjectNotFound(err) || isErrVersionNotFound(err) {
-				return nil
+			if err != nil {
+				if !isErrObjectNotFound(err) && !isErrVersionNotFound(err) {
+					return err
+				}
 			}
-			return err
+			return nil
 		})
 	}
 }
@@ -959,5 +961,10 @@ func (h *healSequence) healObject(bucket, object, versionID string) error {
 		object:    object,
 		versionID: versionID,
 	}, madmin.HealItemObject)
-	return err
+	if err != nil {
+		if !isErrObjectNotFound(err) && !isErrVersionNotFound(err) {
+			return err
+		}
+	}
+	return nil
 }
