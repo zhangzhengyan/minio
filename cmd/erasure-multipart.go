@@ -60,6 +60,9 @@ func (er erasureObjects) checkUploadIDExists(ctx context.Context, bucket, object
 
 	storageDisks := er.getDisks()
 
+	//implement single copy
+	storageDisks = er.getStorageDisks(object, storageDisks)
+
 	// Read metadata associated with the object from all disks.
 	partsMetadata, errs := readAllFileInfo(ctx, storageDisks, minioMetaMultipartBucket,
 		uploadIDPath, "", false)
@@ -366,6 +369,10 @@ func (er erasureObjects) newMultipartUpload(ctx context.Context, bucket string, 
 	userDefined := cloneMSS(opts.UserDefined)
 
 	onlineDisks := er.getDisks()
+
+	//implement single copy
+	onlineDisks = er.getStorageDisks(object, onlineDisks)
+
 	parityDrives := globalStorageClass.GetParityForSC(userDefined[xhttp.AmzStorageClass])
 	if parityDrives < 0 {
 		parityDrives = er.defaultParityCount
@@ -608,6 +615,10 @@ func (er erasureObjects) PutObjectPart(ctx context.Context, bucket, object, uplo
 	}
 
 	onlineDisks := er.getDisks()
+
+	//implement single copy
+	onlineDisks = er.getStorageDisks(object, onlineDisks)
+
 	writeQuorum := fi.WriteQuorum(er.defaultWQuorum())
 
 	if cs := fi.Metadata[hash.MinIOMultipartChecksum]; cs != "" {
@@ -812,6 +823,10 @@ func (er erasureObjects) ListObjectParts(ctx context.Context, bucket, object, up
 	}
 
 	onlineDisks := er.getDisks()
+
+	//implement single copy
+	onlineDisks = er.getStorageDisks(object, onlineDisks)
+
 	uploadIDPath := er.getUploadIDDir(bucket, object, uploadID)
 
 	if maxParts == 0 {
@@ -946,6 +961,10 @@ func (er erasureObjects) CompleteMultipartUpload(ctx context.Context, bucket str
 
 	uploadIDPath := er.getUploadIDDir(bucket, object, uploadID)
 	onlineDisks := er.getDisks()
+
+	//implement single copy
+	onlineDisks = er.getStorageDisks(object, onlineDisks)
+
 	writeQuorum := fi.WriteQuorum(er.defaultWQuorum())
 
 	// Read Part info for all parts

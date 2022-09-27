@@ -102,6 +102,9 @@ func newErasureServerPools(ctx context.Context, endpointServerPools EndpointServ
 			commonParityDrives = ecDrivesNoConfig(ep.DrivesPerSet)
 		}
 
+		//if single copy, now default 0
+		commonParityDrives = 0
+
 		if err = storageclass.ValidateParity(commonParityDrives, ep.DrivesPerSet); err != nil {
 			return nil, fmt.Errorf("All current serverPools should have same parity ratio - expected %d, got %d", commonParityDrives, ecDrivesNoConfig(ep.DrivesPerSet))
 		}

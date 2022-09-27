@@ -470,6 +470,8 @@ func newErasureSets(ctx context.Context, endpoints PoolEndpoints, storageDisks [
 				nsMutex:               mutex,
 				bp:                    bp,
 				bpOld:                 bpOld,
+				isSingleCopy:          true,
+				parent:                s,
 			}
 		}(i)
 	}

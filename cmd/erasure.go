@@ -70,6 +70,9 @@ type erasureObjects struct {
 	bpOld *bpool.BytePoolCap
 
 	deletedCleanupSleeper *dynamicSleeper
+
+	isSingleCopy bool
+	parent       *erasureSets
 }
 
 // NewNSLock - initialize a new namespace RWLocker instance.
@@ -86,6 +89,11 @@ func (er erasureObjects) Shutdown(ctx context.Context) error {
 
 // defaultWQuorum write quorum based on setDriveCount and defaultParityCount
 func (er erasureObjects) defaultWQuorum() int {
+	//implement single copy
+	if er.isSingleCopy {
+		return 1
+	}
+
 	dataCount := er.setDriveCount - er.defaultParityCount
 	if dataCount == er.defaultParityCount {
 		return dataCount + 1

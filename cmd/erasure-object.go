@@ -585,6 +585,9 @@ func readAllXL(ctx context.Context, disks []StorageAPI, bucket, object string, r
 func (er erasureObjects) getObjectFileInfo(ctx context.Context, bucket, object string, opts ObjectOptions, readData bool) (fi FileInfo, metaArr []FileInfo, onlineDisks []StorageAPI, err error) {
 	disks := er.getDisks()
 
+	//implement singel copy
+	disks = er.getStorageDisks(object, disks)
+
 	var errs []error
 
 	// Read metadata associated with the object from all disks.
@@ -927,6 +930,9 @@ func (er erasureObjects) putObject(ctx context.Context, bucket string, object st
 	userDefined := cloneMSS(opts.UserDefined)
 
 	storageDisks := er.getDisks()
+
+	//implement singel copy
+	storageDisks = er.getStorageDisks(object, storageDisks)
 
 	parityDrives := len(storageDisks) / 2
 	if !opts.MaxParity {
@@ -2027,4 +2033,19 @@ func (er erasureObjects) restoreTransitionedObject(ctx context.Context, bucket s
 		MTime: oi.ModTime,
 	})
 	return setRestoreHeaderFn(oi, err)
+}
+
+// Returns always a same set disk index for a given input.
+func (er erasureObjects) getHashedDiskIndex(input string, algo string, id [16]byte) int {
+	return hashKey(algo, input, len(er.getDisks()), id)
+}
+
+func (er erasureObjects) getStorageDisks(input string, disks []StorageAPI) []StorageAPI {
+	if !er.isSingleCopy {
+		return disks
+	}
+
+	idx := er.getHashedDiskIndex(input, er.parent.distributionAlgo, er.parent.deploymentID)
+
+	return []StorageAPI{disks[idx]}
 }
