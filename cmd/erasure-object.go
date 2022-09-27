@@ -85,6 +85,11 @@ func (er erasureObjects) CopyObject(ctx context.Context, srcBucket, srcObject, d
 	// Read metadata associated with the object from all disks.
 	storageDisks := er.getDisks()
 
+	if srcBucket != minioMetaBucket {
+		//implement singel copy
+		storageDisks = er.getStorageDisks(srcObject, storageDisks)
+	}
+
 	var metaArr []FileInfo
 	var errs []error
 
@@ -585,8 +590,10 @@ func readAllXL(ctx context.Context, disks []StorageAPI, bucket, object string, r
 func (er erasureObjects) getObjectFileInfo(ctx context.Context, bucket, object string, opts ObjectOptions, readData bool) (fi FileInfo, metaArr []FileInfo, onlineDisks []StorageAPI, err error) {
 	disks := er.getDisks()
 
-	//implement singel copy
-	disks = er.getStorageDisks(object, disks)
+	if bucket != minioMetaBucket {
+		//implement singel copy
+		disks = er.getStorageDisks(object, disks)
+	}
 
 	var errs []error
 
@@ -931,8 +938,10 @@ func (er erasureObjects) putObject(ctx context.Context, bucket string, object st
 
 	storageDisks := er.getDisks()
 
-	//implement singel copy
-	storageDisks = er.getStorageDisks(object, storageDisks)
+	if bucket != minioMetaBucket {
+		//implement singel copy
+		storageDisks = er.getStorageDisks(object, storageDisks)
+	}
 
 	parityDrives := len(storageDisks) / 2
 	if !opts.MaxParity {

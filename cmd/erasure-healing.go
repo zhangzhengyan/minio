@@ -299,6 +299,12 @@ func (er erasureObjects) healObject(ctx context.Context, bucket string, object s
 	scanMode := opts.ScanMode
 
 	storageDisks := er.getDisks()
+
+	if bucket != minioMetaBucket {
+		//implement signle copy
+		storageDisks = er.getStorageDisks(object, storageDisks)
+	}
+
 	storageEndpoints := er.getEndpoints()
 
 	if globalTrace.NumSubscribers(madmin.TraceHealing) > 0 {
@@ -990,6 +996,12 @@ func (er erasureObjects) HealObject(ctx context.Context, bucket, object, version
 	}
 
 	storageDisks := er.getDisks()
+
+	if bucket != minioMetaBucket {
+		//implement signle copy
+		storageDisks = er.getStorageDisks(object, storageDisks)
+	}
+
 	storageEndpoints := er.getEndpoints()
 
 	// When versionID is empty, we read directly from the `null` versionID for healing.
